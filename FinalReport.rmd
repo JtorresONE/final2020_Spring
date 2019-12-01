@@ -1,45 +1,349 @@
 ---
 title: "Aides Drug"
-author: "Put your name here!"
-date: "put the date here"
+author: "Jose Torres Vargas"
+date: "04/16/2020"
 output: html_document
 ---
 
 ```{r include=FALSE,echo=FALSE}
 require(tidyverse)
 require(tigerstats)
-avast <-read.csv(file="avastivironal.csv",header=TRUE)
+library(ggplot2)
+triUmp <-read.csv(file="triUmpsal.csv",header=TRUE)
 ```
+
+<!-- Individual tables for each of the questions !-->
+
+```{r}
+
+MasterDbPre <- mutate(triUmp, typeUser = derivedFactor(
+    "LBGTQ" = (LGBTQ != "straight"),
+    "Male" = (gender == "M"),
+    "Female" = (gender == "F"),
+    "DrugUser" = (DrugUser == "yes"),
+    .method = "first",
+    .default = 0
+    ))
+Drug1 <- mutate(MasterDbPre, typeUser = (derivedFactor(
+    "Drug User" = (DrugUser == "yes"),
+    .method = "first",
+    .default = 0
+    )))
+Drug2 <- filter(Drug1, typeUser == "Drug User")
+
+MasterDb <- full_join(MasterDbPre, Drug2)
+
+```
+
+
+
 
 # Introduction
 
 <!--In this section you explain what you are trying to show.  Where did the data come from?  What is the research or other question you are trying to answer?.  If you skimp in this section expect to be marked down in your grade. Paint a picture of the project a couple of paragraphs is expected!-->
 
-A new  preventative aides (abacavirinol) is under test in clinical trials. Analyze the effectiveness of this drug across the board. Consider population subgroups by gender, drug use, and sexual orientation. Finish this!
+A new  preventative aides (triUmpsal) is under test in clinical trials. Analyze the effectiveness of this drug across the board. Consider population subgroups by gender, drug use, and sexual orientation. Finish this!
 
 # Methods
 
 <!--Decide on your methods:  use "variable analysis" or other appropriate descriptors.  Make sure to choose at least one graphical method and at least one numerical method. Discuss what data manipulations may be needed for example subsetting or other binning procedures and what sort of graphical displays and inferential tools will be used!-->
 
-#Results
+All variables in this study are categorical. As a result we use bar chart for graphical display, a cross table to summarize the numerical results, and a chi-square and/or fisher exact test for inference.
+
+This will hold for all 5 questions.
+
+
+
+<!--Graphical results here.  Make sure to show your code.  Provide appropriate labels for axes, giving units if possible, and provide a good title for the graph, too.  Use the graphical results to describe the patterns if any that exist in the data as focused toward the research question. Bottom line is to explain the features of the graph that are relevant to conforming or departing to what is expected by your null hypothesis !-->
+# Master Box Chart (Infected vs Treatment)
+
+### Includes all Types seperated by color in a detail overview
+
+
+```{r}
+ggplot(MasterDb, aes(x = infected, fill = typeUser))+
+geom_bar(position = position_dodge(width = 0.3))
+ggplot(MasterDb, aes(x = treatment, fill = typeUser))+
+geom_bar(position = position_dodge(width = 0.3))
+```
+
+GRAPH 1 vs GRAPH 2
+
+
+The graphs above show that vaccine somewhat does have in affect wheter the person aquires aids or not.
+
+
+
+
+
+### The first question is wether or not the vaccine was effective in the whole population. 
+
+$H_O$ : The drug has no effect on wether or not one gets Aids.
+
+$H_A$ : The drug does have an effect on whether or not one contracts Aids. 
+
+
+# Results (Whole Population)
 
 <!--Divide this section into two sub-sections:  One for your descriptive  results and one for your inferential results.!-->
 
 ## Descriptive Results
 
+
+
 ### Graphical Descriptive Results
 
-<!--Graphical results here.  Make sure to show your code.  Provide appropriate labels for axes, giving units if possible, and provide a good title for the graph, too.  Use the graphical results to describe the patterns if any that exist in the data as focused toward the research question. Bottom line is to explain the features of the graph that are relevant to conforming or departing to what is expected by your null hypothesis !-->
+
+
+```{r}
+barchartGC(~infected + treatment , type = "percent", data=triUmp)
+```
+
+
+This barchart shows that the vaccine may have had an affect on whether one aquires aids or not
 
 ### Numerical Descriptive Results
 
 <!--Numerical results go here. Use the numerical results to describe the patterns if any that exist in the data as focused toward the research question!-->
+
+```{r}
+table1 <- xtabs(~infected + treatment, data=triUmp)
+rowPerc(table1)
+```
+Percentage result:
+
+```{r}
+colPerc(table1)
+```
+
 
 ## Inferential Results
 
 <!--State hypothesis clearly.  Make sure your discussion of the inferential test covers all the aspects that the test output produces, such as test statistic, p-value etc.  Make a decision about the null hypothesis, explain the assumptions on which the selected test/procedure was based, and why the chosen procedure satisfys the assumptions and is appropriate to answer the research question!-->
 
 
+```{r}
+chisq.test(table1)
+chisqtestGC(table1)
+fisher.test(table1)
+```
+
+
 # Discussion and Conclusion
+
+1 
+
+The P value < 0.05 therefore we reject the null hyphothesis.
+
+We have evidence to support the contention, that this drug does have an effect in the general population that wheter or not one acquires aids.
+
+
+<!--Discussion and conclusion here.  If you found a relationship be sure to consider whether the relationship occurs because one of the variavbles causes the other, or whether they perhasps are related for some other reason.  Watch the chapter 6 videos from the GeorgeTown videos collection.!-->
+
+
+
+### The second question is wether or not the vaccine was effective in the Female population. 
+
+$H_O$ : The drug has no effect on wether or not one gets Aids.
+
+$H_A$ : The drug does have an effect on whether or not one contracts Aids. 
+
+
+# Results (Female Population)
+
+
+### Graphical Descriptive Results
+
+```{r}
+fmdb <- filter(MasterDb, gender == "F")
+barchartGC(~infected + treatment , type = "percent", data=fmdb)
+```
+
+This barchart shows that the vaccine may have had an affect on whether one aquires aids or not on female population.
+
+
+### Numerical Descriptive Results
+
+```{r}
+table2 <- xtabs(~infected + treatment, data=fmdb)
+rowPerc(table2)
+```
+Percentage result:
+
+```{r}
+colPerc(table2)
+```
+## Inferential Results
+
+```{r}
+chisq.test(table2)
+chisqtestGC(table2)
+fisher.test(table2)
+```
+
+# Discussion and Conclusion
+
+2
+
+The P value < 0.05 therefore we reject the null hyphothesis.
+
+We have evidence to support the contention, that this drug does have an effect in the female population that wheter or not one acquires aids.
+
+
+
+### The third question is wether or not the vaccine was effective in the Male population. 
+
+$H_O$ : The drug has no effect on wether or not one gets Aids.
+
+$H_A$ : The drug does have an effect on whether or not one contracts Aids. 
+
+
+
+
+
+
+
+# Results (Male Population)
+
+
+### Graphical Descriptive Results
+
+```{r}
+mdb <- filter(MasterDbPre, gender == "M")
+barchartGC(~infected + treatment , type = "percent", data=mdb)
+```
+
+This barchart shows that the vaccine may have had an affect on whether one aquires aids or not on Male population.
+
+
+### Numerical Descriptive Results
+
+```{r}
+table3 <- xtabs(~infected + treatment, data=mdb)
+rowPerc(table3)
+```
+Percentage result:
+
+```{r}
+colPerc(table3)
+```
+## Inferential Results
+
+```{r}
+chisq.test(table3)
+chisqtestGC(table3)
+fisher.test(table3)
+```
+
+# Discussion and Conclusion
+
+3
+
+The P value < 0.05 therefore we reject the null hyphothesis.
+
+We have evidence to support the contention, that this drug does have an effect in the Male population that wheter or not one acquires aids.
+
+
+### The fourth question is wether or not the vaccine was effective in the drug using population. 
+
+$H_O$ : The drug has no effect on wether or not one gets Aids.
+
+$H_A$ : The drug does have an effect on whether or not one contracts Aids. 
+
+
+
+
+
+# Results (Drug User Population)
+
+
+### Graphical Descriptive Results
+
+```{r}
+drugdb <- filter(MasterDbPre, DrugUser == "yes")
+barchartGC(~infected + treatment , type = "percent", data=drugdb)
+```
+
+This barchart shows that the vaccine may have had an affect on whether one aquires aids or not on drug using population.
+
+
+### Numerical Descriptive Results
+
+```{r}
+table4 <- xtabs(~infected + treatment, data=drugdb)
+rowPerc(table4)
+```
+Percentage result:
+
+```{r}
+colPerc(table4)
+```
+## Inferential Results
+
+```{r}
+chisq.test(table4)
+chisqtestGC(table4)
+fisher.test(table4)
+```
+
+# Discussion and Conclusion
+
+4
+
+The P value < 0.05 therefore we reject the null hyphothesis.
+
+We have evidence to support the contention, that this drug does have an effect in the Drug Using population that wheter or not one acquires aids.
+
+
+
+### The fifth question is wether or not the vaccine was effective in the LBGTQ population. 
+
+$H_O$ : The drug has no effect on wether or not one gets Aids.
+
+$H_A$ : The drug does have an effect on whether or not one contracts Aids. 
+
+
+
+
+# Results ( LGBTQ Population)
+
+
+### Graphical Descriptive Results
+
+```{r}
+lgbtDat<- filter(MasterDbPre, LGBTQ != "straight")
+barchartGC(~infected + treatment , type = "percent", data=lgbtDat)
+```
+
+This barchart shows that the vaccine may have had an affect on whether one aquires aids or not on LBGTQ population.
+
+
+### Numerical Descriptive Results
+
+```{r}
+table5 <- xtabs(~infected + treatment, data=lgbtDat)
+rowPerc(table5)
+```
+Percentage result:
+
+```{r}
+colPerc(table5)
+```
+## Inferential Results
+
+```{r}
+chisq.test(table5)
+chisqtestGC(table5)
+fisher.test(table5)
+```
+
+
+# Discussion and Conclusion
+
+5
+
+The P value < 0.05 therefore we reject the null hyphothesis.
+
+We have evidence to support the contention, that this drug does have an effect in the LBGTQ population that whether or not one acquires aids.
 
 <!--Discussion and conclusion here.  If you found a relationship be sure to consider whether the relationship occurs because one of the variavbles causes the other, or whether they perhasps are related for some other reason.  Watch the chapter 6 videos from the GeorgeTown videos collection.!-->
