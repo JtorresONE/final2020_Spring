@@ -8,7 +8,10 @@ output: html_document
 ```{r include=FALSE,echo=FALSE}
 require(tidyverse)
 require(tigerstats)
+<<<<<<< HEAD
 library(ggplot2)
+=======
+>>>>>>> 8f4564044509398c14e9e19b15865556ac2c9070
 triUmp <-read.csv(file="triUmpsal.csv",header=TRUE)
 ```
 
